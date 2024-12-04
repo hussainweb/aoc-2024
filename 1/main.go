@@ -39,8 +39,6 @@ func main() {
 		p2, e2 := strconv.Atoi(val[1])
 		panicErr(e2)
 		list2 = append(list2, p2)
-
-		fmt.Println(line)
 	}
 
 	slices.Sort(list1)
@@ -55,5 +53,27 @@ func main() {
 		sum += diff
 	}
 
+	similaritySum := 0
+	j := 0
+	for _, l1 := range list1 {
+		matchingCount := 0
+		fmt.Println("Considering", l1)
+		for ; j < len(list2); j++ {
+			fmt.Println("Matching with", list2[j])
+			if list2[j] > l1 {
+				break
+			}
+
+			if list2[j] == l1 {
+				matchingCount++
+			}
+		}
+
+		fmt.Println("Matches", matchingCount)
+
+		similaritySum += l1 * matchingCount
+	}
+
 	fmt.Println("Sum: ", sum)
+	fmt.Println("Similar Sum: ", similaritySum)
 }
