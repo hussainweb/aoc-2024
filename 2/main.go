@@ -44,38 +44,37 @@ func isSafeReport(levels []int, tryRemoving bool) bool {
 	incrementing := false
 	decrementing := false
 
-	for i, e := range levels {
-		if i > 0 {
-			if !incrementing && !decrementing {
-				if e > levels[i-1] {
-					incrementing = true
-				} else if e < levels[i-1] {
-					decrementing = true
-				}
+	for i := 1; i < len(levels); i++ {
+		e := levels[i]
+		if !incrementing && !decrementing {
+			if e > levels[i-1] {
+				incrementing = true
+			} else if e < levels[i-1] {
+				decrementing = true
 			}
+		}
 
-			// We now know the sequence. Let's check if the next element
-			// is in the right order. If not, the report is not safe.
-			diff := e - levels[i-1]
-			if decrementing {
-				diff = -diff
-			}
-			if diff < 1 || diff > 3 {
-				if !tryRemoving {
-					return false
-				}
-
-				// Try removing each element and see if the report is safe
-				for j := 0; j < len(levels); j++ {
-					removed := removeElement(levels, j)
-					if isSafeReport(removed, false) {
-						return true
-					}
-				}
-
-				// Removals didn't work. Give up.
+		// We now know the sequence. Let's check if the next element
+		// is in the right order. If not, the report is not safe.
+		diff := e - levels[i-1]
+		if decrementing {
+			diff = -diff
+		}
+		if diff < 1 || diff > 3 {
+			if !tryRemoving {
 				return false
 			}
+
+			// Try removing each element and see if the report is safe
+			for j := 0; j < len(levels); j++ {
+				removed := removeElement(levels, j)
+				if isSafeReport(removed, false) {
+					return true
+				}
+			}
+
+			// Removals didn't work. Give up.
+			return false
 		}
 	}
 
