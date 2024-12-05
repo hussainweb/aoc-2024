@@ -18,7 +18,7 @@ func main() {
 	panicErr(err)
 
 	safeReports := 0
-	for _, line := range strings.Split(string(dat), "\n") {
+	for r, line := range strings.Split(string(dat), "\n") {
 		if len(line) == 0 {
 			continue
 		}
@@ -30,8 +30,9 @@ func main() {
 
 			levels = append(levels, e)
 		}
+		fmt.Println(r, levels)
 
-		if isSafeReport(levels) {
+		if isSafeReport(levels, true) {
 			safeReports++
 		}
 	}
@@ -39,7 +40,7 @@ func main() {
 	fmt.Println(safeReports)
 }
 
-func isSafeReport(levels []int) bool {
+func isSafeReport(levels []int, tryRemoving bool) bool {
 	incrementing := false
 	decrementing := false
 
@@ -60,10 +61,29 @@ func isSafeReport(levels []int) bool {
 				diff = -diff
 			}
 			if diff < 1 || diff > 3 {
+				if !tryRemoving {
+					return false
+				}
+
+				// Try removing each element and see if the report is safe
+				for j := 0; j < len(levels); j++ {
+					removed := removeElement(levels, j)
+					if isSafeReport(removed, false) {
+						return true
+					}
+				}
+
+				// Removals didn't work. Give up.
 				return false
 			}
 		}
 	}
 
 	return true
+}
+
+func removeElement(levels []int, index int) []int {
+	var copyLevels []int = make([]int, len(levels))
+	copy(copyLevels, levels)
+	return append(copyLevels[:index], copyLevels[index+1:]...)
 }
