@@ -18,48 +18,52 @@ func main() {
 	panicErr(err)
 
 	safeReports := 0
-	for r, line := range strings.Split(string(dat), "\n") {
+	for _, line := range strings.Split(string(dat), "\n") {
 		if len(line) == 0 {
 			continue
 		}
 
 		var levels []int
-		incrementing := false
-		decrementing := false
-		safeReport := true
-
-		for i, elem := range strings.Split(line, " ") {
+		for _, elem := range strings.Split(line, " ") {
 			e, err := strconv.Atoi(elem)
 			panicErr(err)
 
 			levels = append(levels, e)
-
-			if i > 0 {
-				if !incrementing && !decrementing {
-					if e > levels[i-1] {
-						incrementing = true
-					} else if e < levels[i-1] {
-						decrementing = true
-					}
-				}
-
-				// We now know the sequence. Let's check if the next element
-				// is in the right order. If not, the report is not safe.
-				diff := e - levels[i-1]
-				if decrementing {
-					diff = -diff
-				}
-				if diff < 1 || diff > 3 {
-					safeReport = false
-					fmt.Println(r+1, "is not safe")
-					break
-				}
-			}
 		}
-		if safeReport {
+
+		if isSafeReport(levels) {
 			safeReports++
 		}
 	}
 
 	fmt.Println(safeReports)
+}
+
+func isSafeReport(levels []int) bool {
+	incrementing := false
+	decrementing := false
+
+	for i, e := range levels {
+		if i > 0 {
+			if !incrementing && !decrementing {
+				if e > levels[i-1] {
+					incrementing = true
+				} else if e < levels[i-1] {
+					decrementing = true
+				}
+			}
+
+			// We now know the sequence. Let's check if the next element
+			// is in the right order. If not, the report is not safe.
+			diff := e - levels[i-1]
+			if decrementing {
+				diff = -diff
+			}
+			if diff < 1 || diff > 3 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
