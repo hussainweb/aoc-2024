@@ -49,7 +49,7 @@ func main() {
 
 func tryPermutations(lhs uint64, rhs []int) bool {
 	// We have 2^(count-1) permutations possible. Create an array to hold all possible results.
-	places := pow(2, len(rhs)-1)
+	places := pow(3, len(rhs)-1)
 	var permutations []uint64 = make([]uint64, places)
 
 	// Fill our array with the first number in our list. Subsequent numbers will be added or
@@ -58,27 +58,38 @@ func tryPermutations(lhs uint64, rhs []int) bool {
 	// 1 * (0 1 2 3) + (4 5 6 7) length of operands: 2^2
 	// 2 * (0 1) + (2 3) * (4 5) + (6 7) length of operands: 2^1
 	// 3 * (0) + (1) * (2) + (3) * (4) + (5) * (6) + (7) length of operands: 2^0
+	// --
+	// For part 2, we have 3 operators, so we change the power base. All the above calculations
+	// now become 3^something.
 	for x := range places {
 		permutations[x] = uint64(rhs[0])
 	}
 
-	operatorMultiply := true
+	operator := 0 // Mutiply
 	for i := 1; i < len(rhs); i++ {
 		j := 0
 		// Iterate over each permutation
 		for j < places {
 			// Determine the length of each operand list and either multiply or add.
-			ln := pow(2, len(rhs)-i-1)
+			ln := pow(3, len(rhs)-i-1)
 			for k := 0; k < ln; k++ {
-				if operatorMultiply {
+				switch operator {
+				case 0:
 					permutations[j+k] *= uint64(rhs[i])
-				} else {
+				case 1:
 					permutations[j+k] += uint64(rhs[i])
+				case 2:
+					o1 := strconv.FormatUint(permutations[j+k], 10)
+					o2 := strconv.Itoa(rhs[i])
+					permutations[j+k], _ = strconv.ParseUint(o1+o2, 10, 64)
 				}
 			}
 			// Advance to the next operand list and switch the operation.
 			j += ln
-			operatorMultiply = !operatorMultiply
+			operator++
+			if operator > 2 {
+				operator = 0
+			}
 		}
 	}
 
