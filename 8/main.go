@@ -71,7 +71,6 @@ func main() {
 	totalCols := len(antennaMap[0])
 	var runeAntinodes map[rune][]Point = make(map[rune][]Point)
 	var listAntinodes []Point = make([]Point, 0)
-	countAntinodes := 0
 	for r, points := range antennaLoc {
 		for i, p := range points {
 			for j := 0; j < len(points); j++ {
@@ -80,24 +79,25 @@ func main() {
 					continue
 				}
 
-				dp := mirrorDiffPoints(p, points[j])
-				if dp.l < 0 || dp.c < 0 || dp.l >= totalRows || dp.c >= totalCols {
-					continue
-				}
-
-				// We don't need this map at all, but maybe we need it in part 2.
-				runeAntinodes[r] = append(runeAntinodes[r], *newPoint(dp.l, dp.c))
-
-				// Add to listAntinodes
-				found := false
-				for _, p := range listAntinodes {
-					if p.l == dp.l && p.c == dp.c {
-						found = true
+				a := p
+				b := points[j]
+				listAntinodes = addListAntinode(listAntinodes, a)
+				listAntinodes = addListAntinode(listAntinodes, b)
+				for {
+					dp := mirrorDiffPoints(a, b)
+					if dp.l < 0 || dp.c < 0 || dp.l >= totalRows || dp.c >= totalCols {
+						break
 					}
-				}
-				if !found {
-					listAntinodes = append(listAntinodes, *dp)
-					countAntinodes++
+
+					// We don't need this map at all, but maybe we need it in part 2.
+					runeAntinodes[r] = append(runeAntinodes[r], *newPoint(dp.l, dp.c))
+
+					// Add to listAntinodes
+					listAntinodes = addListAntinode(listAntinodes, *dp)
+
+					// Move on to find more points along the "harmonic" path.
+					a = b
+					b = *dp
 				}
 			}
 		}
@@ -111,7 +111,7 @@ func main() {
 	}
 
 	drawMap(antennaMap)
-	fmt.Println(countAntinodes)
+	fmt.Println(len(listAntinodes))
 }
 
 func drawMap(runeMap [][]rune) {
@@ -130,4 +130,17 @@ func copyMap(runeMap [][]rune) [][]rune {
 		newRuneMap = append(newRuneMap, append([]rune{}, line...))
 	}
 	return newRuneMap
+}
+
+func addListAntinode(listAntinodes []Point, dp Point) []Point {
+	found := false
+	for _, p := range listAntinodes {
+		if p.l == dp.l && p.c == dp.c {
+			found = true
+		}
+	}
+	if !found {
+		listAntinodes = append(listAntinodes, dp)
+	}
+	return listAntinodes
 }
