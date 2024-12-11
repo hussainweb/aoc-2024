@@ -23,9 +23,11 @@ func main() {
 	compactLayout := make([]int, len)
 
 	fillDiskLayout(diskMap, diskLayout)
+	// fmt.Println(diskLayout)
 
 	fillAndCompactLayout(diskLayout, compactLayout)
 
+	// fmt.Println(compactLayout)
 	fmt.Println(calcChecksum(compactLayout))
 }
 
@@ -61,19 +63,48 @@ func fillDiskLayout(diskMap string, diskLayout []int) {
 }
 
 func fillAndCompactLayout(diskLayout []int, compactLayout []int) {
-	i := 0
-	j := len(diskLayout) - 1
-	for ; i < len(compactLayout); i++ {
-		compactLayout[i] = diskLayout[i]
-		if diskLayout[i] == -1 {
-			for diskLayout[j] == -1 {
-				j--
-			}
-			compactLayout[i] = diskLayout[j]
-			diskLayout[j] = -2
+	copy(compactLayout, diskLayout)
+
+	j := len(compactLayout) - 1
+	for j > 0 {
+		if compactLayout[j] < 0 {
 			j--
+			continue
 		}
-		diskLayout[i] = -2
+
+		// Found a file. Figure out how big it is.
+		sF, eF := findSpan(compactLayout, j)
+		fileLen := eF - sF + 1
+		// fmt.Println("For file", compactLayout[j], "at", sF, eF)
+
+		// Now find a space for this file starting at the left.
+		i := 0
+		for ; i < sF; i++ {
+			if compactLayout[i] >= 0 {
+				// We are only concerned with finding a space here. Skip the file.
+				continue
+			}
+
+			// Determine the span of this empty space.
+			sS, eS := findSpan(compactLayout, i)
+			spaceLen := eS - sS + 1
+			// fmt.Println("i=", i, "j=", j, "space=", sS, eS, "file=", sF, eF)
+
+			if spaceLen >= fileLen {
+				// First, copy the file to the empty space
+				for k := sS; k < sS+fileLen; k++ {
+					compactLayout[k] = compactLayout[j]
+				}
+				// Next, clear the previous file space.
+				for k := sF; k <= eF; k++ {
+					compactLayout[k] = -2
+				}
+				break
+			}
+			i = eS
+		}
+
+		j = sF - 1
 	}
 }
 
@@ -86,4 +117,29 @@ func calcChecksum(layout []int) uint64 {
 		sum += uint64(i * id)
 	}
 	return sum
+}
+
+func findSpan(layout []int, idx int) (int, int) {
+	s := idx
+	e := idx
+
+	elem := layout[s]
+	for layout[s] == elem {
+		s--
+		if s < 0 {
+			break
+		}
+	}
+	for layout[e] == elem {
+		e++
+		if e >= len(layout) {
+			break
+		}
+	}
+
+	// Correct the indexes
+	s++
+	e--
+
+	return s, e
 }
