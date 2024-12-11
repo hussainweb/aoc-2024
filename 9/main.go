@@ -17,10 +17,10 @@ func main() {
 	panicErr(err)
 
 	diskMap := strings.Trim(string(dat), "\n")
-	len, compactLen := determineLength(diskMap)
+	len, _ := determineLength(diskMap)
 
 	diskLayout := make([]int, len)
-	compactLayout := make([]int, compactLen)
+	compactLayout := make([]int, len)
 
 	fillDiskLayout(diskMap, diskLayout)
 
@@ -73,12 +73,16 @@ func fillAndCompactLayout(diskLayout []int, compactLayout []int) {
 			diskLayout[j] = -2
 			j--
 		}
+		diskLayout[i] = -2
 	}
 }
 
 func calcChecksum(layout []int) uint64 {
 	sum := uint64(0)
 	for i, id := range layout {
+		if id < 0 {
+			continue
+		}
 		sum += uint64(i * id)
 	}
 	return sum
