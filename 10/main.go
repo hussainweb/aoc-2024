@@ -86,15 +86,8 @@ func visitVertex(topoMap [][]vertex, l int, c int, peaks []point) []point {
 
 			v := &topoMap[y][x]
 			if v.height == topoMap[l][c].height+1 {
-				if v.visited {
-					// We have already been to this point.
-					continue
-				}
-
-				if v.height == 9 && !v.marked {
+				if v.height == 9 {
 					peaks = append(peaks, point{x, y})
-					v.marked = true
-					v.visited = true
 					continue
 				}
 
