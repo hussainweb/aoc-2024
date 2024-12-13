@@ -13,7 +13,6 @@ type plot struct {
 	borderB    bool
 	borderR    bool
 	numBorders int
-	processed  bool
 	region     int
 }
 
@@ -92,8 +91,53 @@ func processBordersMap(farmMap [][]plot) {
 				p.borderL = true
 				p.numBorders++
 			}
+		}
+	}
 
-			p.processed = true
+	// Now loop through the map again. This time, check in straight lines to see consecutive
+	// borders and remove them.
+	// This means, going row-wise, remove all consecutive top borders until we hit a plot
+	// with no top border. Do this for all borders one at a time.
+	for r, line := range farmMap {
+		for c := range line {
+			p := &farmMap[r][c]
+
+			if p.borderT {
+				for c2 := c + 1; c2 < len(line); c2++ {
+					if !farmMap[r][c2].borderT || farmMap[r][c2].crop != p.crop {
+						break
+					}
+					farmMap[r][c2].borderT = false
+					farmMap[r][c2].numBorders--
+				}
+			}
+			if p.borderB {
+				for c2 := c + 1; c2 < len(line); c2++ {
+					if !farmMap[r][c2].borderB || farmMap[r][c2].crop != p.crop {
+						break
+					}
+					farmMap[r][c2].borderB = false
+					farmMap[r][c2].numBorders--
+				}
+			}
+			if p.borderL {
+				for r2 := r + 1; r2 < len(farmMap); r2++ {
+					if !farmMap[r2][c].borderL || farmMap[r2][c].crop != p.crop {
+						break
+					}
+					farmMap[r2][c].borderL = false
+					farmMap[r2][c].numBorders--
+				}
+			}
+			if p.borderR {
+				for r2 := r + 1; r2 < len(farmMap); r2++ {
+					if !farmMap[r2][c].borderR || farmMap[r2][c].crop != p.crop {
+						break
+					}
+					farmMap[r2][c].borderR = false
+					farmMap[r2][c].numBorders--
+				}
+			}
 		}
 	}
 }
