@@ -43,8 +43,8 @@ func main() {
 				machine.buttonBX = int64(coordX)
 				machine.buttonBY = int64(coordY)
 			} else if lineParts[0] == "Prize" {
-				machine.prizeX = int64(coordX)
-				machine.prizeY = int64(coordY)
+				machine.prizeX = int64(coordX) + 10000000000000
+				machine.prizeY = int64(coordY) + 10000000000000
 			}
 		}
 
@@ -55,10 +55,6 @@ func main() {
 	for i, machine := range machines {
 		a, b := solveEquation(machine.buttonAX, machine.buttonAY, machine.buttonBX, machine.buttonBY, machine.prizeX, machine.prizeY)
 		fmt.Printf("Machine %d - (%d, %d) + (%d, %d) = (%d, %d) has solution (%d, %d)\n", i, machine.buttonAX, machine.buttonAY, machine.buttonBX, machine.buttonBY, machine.prizeX, machine.prizeY, a, b)
-		if a > 100 || b > 100 {
-			fmt.Println("Skipping machine", i)
-			continue
-		}
 
 		totalCost += (3 * a) + b
 	}
