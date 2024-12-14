@@ -47,11 +47,31 @@ func main() {
 	maxX := 101
 	maxY := 103
 
-	seconds := 100
+	seconds := 8000
 
 	for s := 0; s < seconds; s++ {
+		frequency := make(map[int]int)
 		for r := range robots {
 			robots[r] = IterateRobot(robots[r], maxX, maxY)
+		}
+
+		robotMap := robotsToArray(robots, maxX, maxY)
+		for r := range robots {
+			frequency[countSurroundingRobots(robotMap, robots[r])] += 1
+		}
+
+		highFreqNodes := 0
+		for f := range frequency {
+			if f >= 4 {
+				highFreqNodes += frequency[f]
+			}
+		}
+
+		fmt.Printf("Second: %d, high frequency: %d\n", s, highFreqNodes)
+
+		if highFreqNodes > 100 {
+			fmt.Println("After", s+1, "seconds")
+			drawRobots(robots, maxX, maxY)
 		}
 	}
 
@@ -100,4 +120,47 @@ func checkQuadrant(robot robotState, maxX, maxY int) int {
 	}
 
 	return 0
+}
+
+func countSurroundingRobots(robotMap [][]int, robot robotState) int {
+	count := 0
+	for x := -1; x <= 1; x++ {
+		for y := -1; y <= 1; y++ {
+			cx := robot.px + x
+			cy := robot.py + y
+			if cx < 0 || cy < 0 || cx >= len(robotMap[0]) || cy >= len(robotMap) {
+				continue
+			}
+			count += robotMap[cy][cx]
+		}
+	}
+	return count
+}
+
+func robotsToArray(robots []robotState, maxX, maxY int) [][]int {
+	arr := make([][]int, maxY)
+	for i := range arr {
+		arr[i] = make([]int, maxX)
+	}
+
+	for _, r := range robots {
+		arr[r.py][r.px]++
+	}
+
+	return arr
+}
+
+func drawRobots(robots []robotState, maxX, maxY int) {
+	arr := robotsToArray(robots, maxX, maxY)
+	for _, row := range arr {
+		for _, col := range row {
+			if col > 0 {
+				fmt.Print("#")
+			} else {
+				fmt.Print(".")
+			}
+		}
+		fmt.Println()
+	}
+	fmt.Println()
 }
